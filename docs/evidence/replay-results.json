@@ -1,0 +1,31 @@
+{
+  "scenario": "48 synthetic SGD/THB observations at six-hour intervals; not market history",
+  "first_replay": {
+    "input_quotes": 48,
+    "inserted": 48,
+    "queued": 15,
+    "duplicates": 0
+  },
+  "second_replay": {
+    "input_quotes": 48,
+    "inserted": 0,
+    "queued": 0,
+    "duplicates": 96
+  },
+  "delivery": {
+    "acknowledged": 15,
+    "new_notifications": 15,
+    "failed": 0
+  },
+  "stored": {
+    "quotes": 48,
+    "decisions": 96,
+    "outbox": 15,
+    "notifications": 15
+  },
+  "decisions": {
+    "below_condition": 68,
+    "cooldown": 13,
+    "queued": 15
+  }
+}
