@@ -1,0 +1,22 @@
+[
+  {
+    "name": "upper-threshold",
+    "base": "SGD",
+    "counter": "THB",
+    "source": "synthetic-demo",
+    "direction": "at_or_above",
+    "threshold": "25.04",
+    "cooldown_seconds": 86400,
+    "max_age_seconds": 345600
+  },
+  {
+    "name": "lower-threshold",
+    "base": "SGD",
+    "counter": "THB",
+    "source": "synthetic-demo",
+    "direction": "at_or_below",
+    "threshold": "24.95",
+    "cooldown_seconds": 129600,
+    "max_age_seconds": 345600
+  }
+]
