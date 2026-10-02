@@ -1,0 +1,12 @@
+[
+  {
+    "name": "upper-threshold",
+    "base": "SGD",
+    "counter": "THB",
+    "source": "frankfurter",
+    "direction": "at_or_above",
+    "threshold": "25.04",
+    "cooldown_seconds": 86400,
+    "max_age_seconds": 345600
+  }
+]
