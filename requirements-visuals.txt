@@ -1,0 +1,3 @@
+# Optional tooling for rebuilding the committed documentation PNGs.
+# Not required by the application, demo, provider, server or tests.
+Pillow>=10.1,<13
