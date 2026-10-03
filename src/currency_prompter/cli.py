@@ -1,11 +1,11 @@
-"""Small explicit commands: demo, replay, poll, dispatch, report and serve."""
+"""Small explicit commands: demo, replay, poll, dispatch, report, serve and app."""
 
 import argparse
-from importlib.resources import files
 import json
-from pathlib import Path
 import sqlite3
 import sys
+from importlib.resources import files
+from pathlib import Path
 
 from .domain import FakeClock, SystemClock
 from .monitor import dispatch, load_quotes, load_rules, replay
@@ -16,11 +16,15 @@ from .storage import Store
 
 
 def parser():
-    root = argparse.ArgumentParser(description="Track exchange-rate observations and explain every alert. Demo is entirely offline.")
+    root = argparse.ArgumentParser(
+        description="Track exchange-rate observations and explain every alert. Demo is entirely offline."
+    )
     commands = root.add_subparsers(dest="command", required=True)
-    demo = commands.add_parser("demo", help="replay the bundled synthetic scenario twice and write a report")
+    demo = commands.add_parser(
+        "demo", help="replay the bundled synthetic scenario twice and write a report"
+    )
     demo.add_argument("--output", type=Path, default=Path("demo-output"))
-    for name in ("replay", "poll", "dispatch", "report", "serve"):
+    for name in ("replay", "poll", "dispatch", "report", "serve", "app"):
         command = commands.add_parser(name)
         command.add_argument("--db", type=Path, required=True)
         if name in ("replay", "poll"):
@@ -32,7 +36,7 @@ def parser():
             command.add_argument("--counter", default="THB")
         if name == "report":
             command.add_argument("--output", type=Path, default=Path("output/history.html"))
-        if name == "serve":
+        if name in ("serve", "app"):
             command.add_argument("--port", type=int, default=8765)
     return root
 
@@ -44,7 +48,9 @@ def main(argv=None):
             args.output.mkdir(parents=True, exist_ok=True)
             db = args.output / "demo.sqlite"
             if db.exists():
-                raise ValueError("demo database already exists; choose a new --output folder (existing data is never deleted)")
+                raise ValueError(
+                    "demo database already exists; choose a new --output folder (existing data is never deleted)"
+                )
             resource = files("currency_prompter") / "data"
             quotes = load_quotes(resource / "demo-quotes.json")
             rules = load_rules(resource / "demo-rules.json")
@@ -53,17 +59,43 @@ def main(argv=None):
                 second = replay(store, quotes, rules)
                 delivery = dispatch(store, clock=FakeClock(quotes[-1].received_at))
                 write_report(store, args.output / "history.html")
-                result = {"scenario": "synthetic; not real exchange-rate history", "first_replay": first,
-                          "second_replay": second, "delivery": delivery, "stored": store.counts(),
-                          "decisions": store.outcomes(), "report": str(args.output / "history.html")}
-            (args.output / "summary.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+                result = {
+                    "scenario": "synthetic; not real exchange-rate history",
+                    "first_replay": first,
+                    "second_replay": second,
+                    "delivery": delivery,
+                    "stored": store.counts(),
+                    "decisions": store.outcomes(),
+                    "report": str(args.output / "history.html"),
+                }
+            (args.output / "summary.json").write_text(
+                json.dumps(result, indent=2) + "\n", encoding="utf-8"
+            )
+        elif args.command == "app":
+            from .webapp import make_app_server
+
+            if not 0 <= args.port <= 65535:
+                raise ValueError("port must be 0-65535")
+            server = make_app_server(args.db, args.port)
+            print(
+                f"Currency Rate Prompter: http://127.0.0.1:{server.server_port}/ (Ctrl+C to stop)",
+                flush=True,
+            )
+            try:
+                server.serve_forever()
+            finally:
+                server.server_close()
+            return 0
         elif args.command == "serve":
             with Store(args.db, readonly=True) as store:
                 store.counts()
             if not 0 <= args.port <= 65535:
                 raise ValueError("port must be 0-65535")
             server = make_server(args.db, args.port)
-            print(f"Read-only dashboard: http://127.0.0.1:{server.server_port}/ (Ctrl+C to stop)", flush=True)
+            print(
+                f"Read-only dashboard: http://127.0.0.1:{server.server_port}/ (Ctrl+C to stop)",
+                flush=True,
+            )
             try:
                 server.serve_forever()
             finally:
@@ -75,7 +107,7 @@ def main(argv=None):
             quotes = load_quotes(args.quotes) if args.command == "replay" else None
             if args.command == "poll":
                 clock = SystemClock()
-                quote = Frankfurter().fetch(args.base, args.counter, clock.now())
+                quote = Frankfurter().fetch(args.base, args.counter, clock=clock)
             with Store(args.db, readonly=args.command == "report") as store:
                 if args.command == "replay":
                     result = replay(store, quotes, rules)
@@ -88,7 +120,12 @@ def main(argv=None):
                     write_report(store, args.output)
                     result = {"report": str(args.output)}
         print(json.dumps(result, indent=2))
-        return 0
+        failures = (
+            result.get("failed", 0)
+            if args.command == "dispatch"
+            else (result["delivery"]["failed"] if args.command == "demo" else 0)
+        )
+        return 2 if failures else 0
     except KeyboardInterrupt:
         return 130
     except (ValueError, OSError, sqlite3.Error) as exc:

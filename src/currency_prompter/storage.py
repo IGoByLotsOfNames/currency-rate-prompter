@@ -1,12 +1,11 @@
 """One SQLite transaction records a quote, a decision and an outbox event."""
 
-from datetime import timedelta
 import json
-from pathlib import Path
 import sqlite3
+from datetime import timedelta
+from pathlib import Path
 
 from .domain import Quote, Rule, digest, timestamp, utc
-
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS quotes (
@@ -24,6 +23,10 @@ CREATE TABLE IF NOT EXISTS rule_state (
  rule_id TEXT PRIMARY KEY, latest_observed TEXT NOT NULL, latest_decision TEXT NOT NULL,
  last_queued TEXT, FOREIGN KEY(rule_id) REFERENCES rules(id)
 );
+CREATE TABLE IF NOT EXISTS rule_processing (
+ rule_id TEXT PRIMARY KEY, latest_processing TEXT NOT NULL,
+ FOREIGN KEY(rule_id) REFERENCES rules(id)
+);
 CREATE TABLE IF NOT EXISTS outbox (
  id TEXT PRIMARY KEY, payload TEXT NOT NULL, created_at TEXT NOT NULL,
  delivered_at TEXT, attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT
@@ -38,7 +41,9 @@ class Store:
     def __init__(self, path, *, readonly=False):
         self.path = Path(path)
         if readonly:
-            self.connection = sqlite3.connect(self.path.resolve().as_uri() + "?mode=ro", uri=True, timeout=5)
+            self.connection = sqlite3.connect(
+                self.path.resolve().as_uri() + "?mode=ro", uri=True, timeout=5
+            )
         else:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.connection = sqlite3.connect(self.path, timeout=5)
@@ -47,6 +52,12 @@ class Store:
         if not readonly:
             self.connection.execute("PRAGMA journal_mode=WAL")
             self.connection.executescript(SCHEMA)
+            # Existing databases include rejected decisions but no processing watermark.
+            with self.connection:
+                self.connection.execute(
+                    "INSERT OR IGNORE INTO rule_processing "
+                    "SELECT rule_id,MAX(decided_at) FROM decisions GROUP BY rule_id"
+                )
 
     def close(self):
         self.connection.close()
@@ -70,19 +81,45 @@ class Store:
         try:
             previous = con.execute("SELECT rate FROM quotes WHERE id=?", (quote.key,)).fetchone()
             if previous and previous["rate"] != quote.to_dict()["rate"]:
-                raise ValueError("conflicting revision for the same source, pair and observation time")
-            inserted = con.execute("INSERT OR IGNORE INTO quotes VALUES (?,?,?,?,?,?,?)",
-                (quote.key, quote.base, quote.counter, quote.to_dict()["rate"], timestamp(quote.observed_at),
-                 timestamp(quote.received_at), quote.source)).rowcount == 1
+                raise ValueError(
+                    "conflicting revision for the same source, pair and observation time"
+                )
+            inserted = (
+                con.execute(
+                    "INSERT OR IGNORE INTO quotes VALUES (?,?,?,?,?,?,?)",
+                    (
+                        quote.key,
+                        quote.base,
+                        quote.counter,
+                        quote.to_dict()["rate"],
+                        timestamp(quote.observed_at),
+                        timestamp(quote.received_at),
+                        quote.source,
+                    ),
+                ).rowcount
+                == 1
+            )
             for rule in rules:
                 if not rule.matches(quote):
                     continue
-                con.execute("INSERT OR IGNORE INTO rules VALUES (?,?)", (rule.key, json.dumps(rule.to_dict(), sort_keys=True)))
-                if con.execute("SELECT 1 FROM decisions WHERE rule_id=? AND quote_id=?", (rule.key, quote.key)).fetchone():
+                con.execute(
+                    "INSERT OR IGNORE INTO rules VALUES (?,?)",
+                    (rule.key, json.dumps(rule.to_dict(), sort_keys=True)),
+                )
+                if con.execute(
+                    "SELECT 1 FROM decisions WHERE rule_id=? AND quote_id=?", (rule.key, quote.key)
+                ).fetchone():
                     outcomes.append("duplicate")
                     continue
-                state = con.execute("SELECT * FROM rule_state WHERE rule_id=?", (rule.key,)).fetchone()
-                if state and (quote.observed_at <= utc(state["latest_observed"]) or now < utc(state["latest_decision"])):
+                state = con.execute(
+                    "SELECT * FROM rule_state WHERE rule_id=?", (rule.key,)
+                ).fetchone()
+                processing = con.execute(
+                    "SELECT latest_processing FROM rule_processing WHERE rule_id=?", (rule.key,)
+                ).fetchone()
+                if (processing and now < utc(processing["latest_processing"])) or (
+                    state and quote.observed_at <= utc(state["latest_observed"])
+                ):
                     outcome = "out_of_order"
                 elif now - quote.observed_at > timedelta(seconds=rule.max_age_seconds):
                     outcome = "stale"
@@ -90,18 +127,37 @@ class Store:
                     last_queued = state["last_queued"] if state else None
                     if not rule.qualifies(quote):
                         outcome = "below_condition"
-                    elif last_queued and now - utc(last_queued) < timedelta(seconds=rule.cooldown_seconds):
+                    elif last_queued and now - utc(last_queued) < timedelta(
+                        seconds=rule.cooldown_seconds
+                    ):
                         outcome = "cooldown"
                     else:
                         outcome = "queued"
                         event_id = digest({"rule": rule.key, "quote": quote.key})
-                        payload = {"id": event_id, "rule": rule.to_dict(), "quote": quote.to_dict(), "queued_at": timestamp(now)}
-                        con.execute("INSERT INTO outbox(id,payload,created_at) VALUES (?,?,?)",
-                                    (event_id, json.dumps(payload, sort_keys=True), timestamp(now)))
+                        payload = {
+                            "id": event_id,
+                            "rule": rule.to_dict(),
+                            "quote": quote.to_dict(),
+                            "queued_at": timestamp(now),
+                        }
+                        con.execute(
+                            "INSERT INTO outbox(id,payload,created_at) VALUES (?,?,?)",
+                            (event_id, json.dumps(payload, sort_keys=True), timestamp(now)),
+                        )
                         last_queued = timestamp(now)
-                    con.execute("INSERT OR REPLACE INTO rule_state VALUES (?,?,?,?)",
-                                (rule.key, timestamp(quote.observed_at), timestamp(now), last_queued))
-                con.execute("INSERT INTO decisions VALUES (?,?,?,?)", (rule.key, quote.key, outcome, timestamp(now)))
+                    con.execute(
+                        "INSERT OR REPLACE INTO rule_state VALUES (?,?,?,?)",
+                        (rule.key, timestamp(quote.observed_at), timestamp(now), last_queued),
+                    )
+                con.execute(
+                    "INSERT INTO decisions VALUES (?,?,?,?)",
+                    (rule.key, quote.key, outcome, timestamp(now)),
+                )
+                con.execute(
+                    "INSERT INTO rule_processing VALUES (?,?) ON CONFLICT(rule_id) DO UPDATE "
+                    "SET latest_processing=MAX(rule_processing.latest_processing,excluded.latest_processing)",
+                    (rule.key, timestamp(now)),
+                )
                 outcomes.append(outcome)
             con.commit()
             return {"inserted": inserted, "outcomes": outcomes}
@@ -110,27 +166,57 @@ class Store:
             raise
 
     def pending(self, limit=1000):
-        return self.connection.execute("SELECT * FROM outbox WHERE delivered_at IS NULL ORDER BY created_at,id LIMIT ?", (limit,)).fetchall()
+        return self.connection.execute(
+            "SELECT * FROM outbox WHERE delivered_at IS NULL ORDER BY created_at,id LIMIT ?",
+            (limit,),
+        ).fetchall()
+
+    def _delivery_time(self, event_id, now):
+        now = utc(now)
+        queued = self.connection.execute(
+            "SELECT created_at FROM outbox WHERE id=?", (event_id,)
+        ).fetchone()
+        if queued is None or now < utc(queued["created_at"]):
+            raise ValueError("delivery time must not precede its queued event")
+        receipt = self.connection.execute(
+            "SELECT recorded_at FROM notifications WHERE id=?", (event_id,)
+        ).fetchone()
+        if receipt and now < utc(receipt["recorded_at"]):
+            raise ValueError("delivery time must not precede its journal receipt")
+        return timestamp(now)
 
     def record_notification(self, event, now):
         with self.connection:
-            return self.connection.execute("INSERT OR IGNORE INTO notifications VALUES (?,?,?)",
-                (event["id"], json.dumps(event, sort_keys=True), timestamp(now))).rowcount == 1
+            delivery_time = self._delivery_time(event["id"], now)
+            return (
+                self.connection.execute(
+                    "INSERT OR IGNORE INTO notifications VALUES (?,?,?)",
+                    (event["id"], json.dumps(event, sort_keys=True), delivery_time),
+                ).rowcount
+                == 1
+            )
 
     def acknowledge(self, event_id, now):
         with self.connection:
-            self.connection.execute("UPDATE outbox SET delivered_at=?, attempts=attempts+1, last_error=NULL WHERE id=? AND delivered_at IS NULL",
-                                    (timestamp(now), event_id))
+            delivery_time = self._delivery_time(event_id, now)
+            self.connection.execute(
+                "UPDATE outbox SET delivered_at=?, attempts=attempts+1, last_error=NULL WHERE id=? AND delivered_at IS NULL",
+                (delivery_time, event_id),
+            )
 
     def failed(self, event_id, error):
         # Store the exception type only: provider messages may contain private data.
         with self.connection:
-            self.connection.execute("UPDATE outbox SET attempts=attempts+1,last_error=? WHERE id=? AND delivered_at IS NULL",
-                                    (type(error).__name__, event_id))
+            self.connection.execute(
+                "UPDATE outbox SET attempts=attempts+1,last_error=? WHERE id=? AND delivered_at IS NULL",
+                (type(error).__name__, event_id),
+            )
 
     def counts(self):
-        return {table: self.connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-                for table in ("quotes", "decisions", "outbox", "notifications")}
+        return {
+            table: self.connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            for table in ("quotes", "decisions", "outbox", "notifications")
+        }
 
     def quotes(self, *, base=None, counter=None, limit=1000):
         sql, values = "SELECT * FROM quotes", []
@@ -142,9 +228,22 @@ class Store:
         return [dict(row) for row in self.connection.execute(sql, values)]
 
     def alerts(self, limit=1000):
-        return [{"event": json.loads(row["payload"]), "delivered_at": row["delivered_at"],
-                 "attempts": row["attempts"], "last_error": row["last_error"]}
-                for row in self.connection.execute("SELECT * FROM outbox ORDER BY created_at DESC,id LIMIT ?", (limit,))]
+        return [
+            {
+                "event": json.loads(row["payload"]),
+                "delivered_at": row["delivered_at"],
+                "attempts": row["attempts"],
+                "last_error": row["last_error"],
+            }
+            for row in self.connection.execute(
+                "SELECT * FROM outbox ORDER BY created_at DESC,id LIMIT ?", (limit,)
+            )
+        ]
 
     def outcomes(self):
-        return {row[0]: row[1] for row in self.connection.execute("SELECT outcome,COUNT(*) FROM decisions GROUP BY outcome")}
+        return {
+            row[0]: row[1]
+            for row in self.connection.execute(
+                "SELECT outcome,COUNT(*) FROM decisions GROUP BY outcome"
+            )
+        }
