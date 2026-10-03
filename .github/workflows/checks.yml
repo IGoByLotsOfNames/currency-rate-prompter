@@ -1,27 +1,119 @@
 name: Checks
-on: [push, pull_request]
+
+on: [push, pull_request, workflow_dispatch]
+
 permissions:
   contents: read
+
 jobs:
+  quality:
+    name: Python lint and format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m ruff check .
+      - run: python -m ruff format --check .
+
   test:
+    name: Python ${{ matrix.python }} on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python: ['3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      COVERAGE_RCFILE: ${{ github.workspace }}/pyproject.toml
+      COVERAGE_FILE: ${{ github.workspace }}/.coverage
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install .
-      - run: python -m unittest discover -s tests -v
-      - run: currency-prompter demo --output ci-demo
-      - run: python -m compileall -q src
-      - uses: actions/upload-artifact@v4
+      - name: Install application and pinned development tools
+        run: python -m pip install . -r requirements-dev.txt
+      - name: Unit and local HTTP integration tests
+        run: python -m coverage run -m unittest discover -s tests -v
+      - name: Untimed benchmark wiring check
+        run: python scripts/benchmark_dashboard.py --check --output-parent ci-benchmark-check
+      - name: Offline deterministic CLI demo
+        run: python -m coverage run -m currency_prompter demo --output ci-demo
+      - name: Combine subprocess and demo measurements
+        if: always()
+        run: python -m coverage combine
+      - name: Export coverage JSON
+        if: always()
+        run: python -m coverage json --fail-under=0 -o coverage.json
+      - name: Export coverage XML
+        if: always()
+        run: python -m coverage xml --fail-under=0 -o coverage.xml
+      - name: Enforce measured coverage floor
+        if: always()
+        run: python -m coverage report
+      - name: Compile authored Python syntax
+        run: python -m compileall -q src tests
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: demo-${{ matrix.os }}-${{ matrix.python }}
-          path: ci-demo/
+          name: python-evidence-${{ matrix.os }}-${{ matrix.python }}
+          path: |
+            coverage.json
+            coverage.xml
+            ci-demo/
+            ci-benchmark-check/
+          retention-days: 7
+          if-no-files-found: warn
+
+  frontend:
+    name: Offline DOM tests on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check
+      - run: npm run test:coverage
+
+  packaging:
+    name: Extracted source demo and wheel contents
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-dev.txt
+      - name: Build wheel and source distribution
+        run: python -m build
+      - name: Check archive paths and packaged application resources
+        run: python scripts/check_distribution.py dist --extract-to packaged-source
+      - name: Exercise extracted demo without site packages
+        run: python -S -B -m unittest discover -s packaged-source/tests -p test_demo_launcher.py -v
+      - uses: actions/upload-artifact@v7
+        with:
+          name: source-and-wheel
+          path: dist/
           retention-days: 7
