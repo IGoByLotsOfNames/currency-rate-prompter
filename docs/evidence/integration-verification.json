@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "kind": "integration_validation",
+  "recorded_on": "2026-10-03",
+  "scope": "Reviewed publication copy; local Windows checks only. Hosted GitHub Actions status is separate.",
+  "baseline_commit": "d4c067d6477dbaa8ddd1ae65358a0599c3bb807a",
+  "runtime": {
+    "python": "3.12.14",
+    "sqlite": "3.53.1",
+    "os": "Windows",
+    "node": "24.19.0"
+  },
+  "python_suite": {
+    "collected": 142,
+    "passed": 141,
+    "skipped": 1,
+    "skip": "Windows symlink creation unavailable"
+  },
+  "extracted_source_demo": {
+    "passed": 9,
+    "method": "Built source distribution; python -S -B with no site packages"
+  },
+  "frontend_suite": {
+    "passed": 19,
+    "method": "Node built-in test runner and jsdom with mock API",
+    "coverage": {
+      "line_percent": 96.32,
+      "branch_percent": 82.84,
+      "function_percent": 90.83
+    }
+  },
+  "python_coverage": {
+    "combined_percent": 92.62839879154079,
+    "statement_percent": 93.6558287073751,
+    "branch_percent": 89.34010152284264,
+    "excluded_lines": 0,
+    "collection": "Full suite, subprocesses and deterministic CLI replay"
+  },
+  "checks": {
+    "ruff_lint": "passed",
+    "ruff_format": "passed",
+    "benchmark_wiring": "passed; untimed, not a new benchmark",
+    "package_build": "wheel and source distribution passed",
+    "wheel_resources": "19 source/static/data resources matched byte for byte",
+    "dependency_consistency": "passed"
+  },
+  "application_files_unchanged": true,
+  "source_sha256": {
+    "__init__.py": "80a4371295c0c35e3ef8a31380dfd5a3d5b40463ea637c6df69313338cca26db",
+    "__main__.py": "482b8693e2fe6dbd732e3d7961e03827d3efa187bad11d29da188be580ebbeea",
+    "app_service.py": "be24b1e89cb983a338d3072e82af42f1e757baf085b8ec7011b5a4dee526620c",
+    "cli.py": "87e98b0e93c360bef5e1b5ddc3642bc631038375ea64eca5fcc5878755f183e8",
+    "currency_catalogue.py": "1e91a6e087885cbe11794762247dc9f7300f9a6524fcb861f284ce91c1175053",
+    "data/currencies.json": "2532225513a96af7c29b54cd2d4f1429800d6bb4824cb335a87aca8504ae3c12",
+    "data/demo-quotes.json": "42f5b161b5be13489284f9c9b9fccfe583e2bb5e8d0efd11b1fffa11f3b3a1e0",
+    "data/demo-rules.json": "31492da34016c67e9590685eeeb986767c1a9fe1c18f37b53661d24eb67a8f8c",
+    "domain.py": "b3ac3fc57e7dae8ec1dd6afdb7171d3e4be4f2bf55354b618655e2b94cd2cef3",
+    "history_provider.py": "672cba6c285b117b3fb5207e5d365fe8ab35890ff05799d004d2665ab29d6313",
+    "monitor.py": "b0db32208f265942ed0f1acd77b17727b61db16c1a4dab12f36590c08661c1ab",
+    "provider.py": "f48a48a5c7990a67c6da81024505316f74b1aff6973ec1179f08893dfe1ab147",
+    "report.py": "2d329809a99a0dc7b37b86b5e9341edd7ff1355f52efac8084580e801834c0ca",
+    "server.py": "3ba76c363fe15e31012e23b049889e419b91adde082f4a0f2296336ebcdfe05e",
+    "static/app.css": "ec6f05ddbd554d16e51127bac91f1413b0297ee2fda630206f3c5c70394af908",
+    "static/app.js": "1e199377a220f5003ccfbcf95e20cb0a31c67926c23b6b0e7991f9f69a8c71e8",
+    "static/index.html": "0eca5c556f9ccccb50d845a3fa5988af571ff3a6cbb1505033d86e581144c904",
+    "storage.py": "0a653eec0ef04b515f09764172bc12593b86f40f6d0c4179c794cad793a14ab2",
+    "webapp.py": "d85786fc32e7e971933ee7b31cddc857a4bf0709b8927813c07af66a60fc06ad"
+  },
+  "logs": {
+    "python-tests.log": {
+      "sha256": "ce5d28ee7e2b3f0730f938a5d12d24c4b256b36f6a65100ed927696a7faab3d1"
+    },
+    "cli-demo.log": {
+      "sha256": "a643671c7dbccb7d03807c08f02575e202a50f2749a8344cbc33536d6f58da65"
+    },
+    "coverage-summary.log": {
+      "sha256": "5aa878ffac09b1100780f2d37f15c1d97882544b9cd730b578c98a5185c38860"
+    },
+    "frontend-tests.log": {
+      "sha256": "964a901abc7a0bc75809ce2a4e25f2f159ea4561c718ca2c403888ce08ba7d6b"
+    },
+    "lint.log": {
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "format.log": {
+      "sha256": "d08230b1454d424dcb460fe8ce2fae71121ad589f91b38491dce79de9a9d4035"
+    },
+    "benchmark-check.log": {
+      "sha256": "0248a276744bb11532a6346d69038f064eac61d68d501bef41a4758488c418ef"
+    },
+    "distribution-check.log": {
+      "sha256": "29156b00c6f3e6310c8c5b909b4cbaf5ae0dbb2aaf2488be434e1bd722c50dba"
+    },
+    "extracted-demo-tests.log": {
+      "sha256": "64f61e4a06c5b04867f4c3e5989634ab2979a62e51e525d8f4923c49ea47588c"
+    },
+    "build-verified.log": {
+      "sha256": "e08b7697e2410421eb0e3d4e42b059d3a3a1eca500b74e9f3dc79c7aab5a4873"
+    }
+  },
+  "configured_ci": {
+    "jobs": 12,
+    "python": "3.10 through3.13, Linux and Windows",
+    "node": "24, Linux and Windows",
+    "packaging": "Linux Python3.12 extracted source demo",
+    "remote_success_claimed": false
+  },
+  "limitations": [
+    "Synthetic tests and fixtures do not establish savings or forecasting performance.",
+    "DOM emulation does not establish browser layout; manual browser evidence is recorded separately.",
+    "One Windows symlink test skipped locally."
+  ]
+}

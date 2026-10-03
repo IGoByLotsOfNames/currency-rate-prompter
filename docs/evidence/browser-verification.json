@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-10-03",
+  "scope": "Manual checks in the Codex built-in desktop browser against an isolated offline demo session",
+  "data": "Synthetic SGD/THB quotes with a fixed clock; no provider requests",
+  "observations": [
+    {
+      "check": "90-day overview",
+      "result": "90 synthetic observations displayed; rendered chart and conversion card inspected"
+    },
+    {
+      "check": "THB to SGD with fee",
+      "inputs": {
+        "amount_thb": "26036.4",
+        "rate_thb_per_sgd": "26.0364",
+        "percentage_fee": "2"
+      },
+      "result_sgd": "980"
+    },
+    {
+      "check": "Refresh and retry",
+      "result": "First refresh creates one local alert; repeating the same observation still shows one alert"
+    },
+    {
+      "check": "CSV download action",
+      "result": "Export CSV initiated the browser download event; CSV bytes not independently inspected in this manual check"
+    },
+    {
+      "check": "Catalogue search",
+      "query": "Japanese",
+      "result": "JPY — Japanese Yen offered as matching counter currency"
+    },
+    {
+      "check": "Watchlist persistence",
+      "result": "SGD/JPY added through the interface and retained after page reload"
+    }
+  ],
+  "screenshot": "../assets/dashboard-demo.jpg",
+  "limitations": [
+    "Desktop browser smoke checks, not a full browser compatibility or accessibility audit",
+    "No live provider, email delivery or financial transaction tested",
+    "No page-latency or savings measurement"
+  ]
+}

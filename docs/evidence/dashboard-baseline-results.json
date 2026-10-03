@@ -1,0 +1,795 @@
+{
+  "schema_version": 1,
+  "status": "verified_user_run_baseline",
+  "run_id": "dashboard-baseline-20261003T082500718919Z-d662c8",
+  "verified_at_utc": "2026-10-03T08:34:22.021376+00:00",
+  "property": "Warm repeated preparation of one selected reference dashboard",
+  "scope": "AppService.dashboard calls including fresh readonly SQLite connections and loop/result-slot overhead; excludes setup, warmup, checks, process startup, JSON, network and UI",
+  "workload": "20-pair maximum synthetic watchlist; zero rules, outbox, notifications",
+  "data": "Entirely synthetic. frankfurter source is used only inside these isolated fixtures to exercise the reference read path.",
+  "parameters": {
+    "sizes": [
+      100,
+      1000,
+      10000
+    ],
+    "processes_per_case": 5,
+    "batches": 10,
+    "calls_per_batch": 10,
+    "warmups": 5,
+    "preflight_correctness_calls": 1,
+    "seed": 1729,
+    "clock": "2026-10-03T12:00:00Z",
+    "pair": [
+      "SGD",
+      "THB"
+    ],
+    "days": 90,
+    "pairs": [
+      [
+        "SGD",
+        "THB"
+      ],
+      [
+        "SGD",
+        "USD"
+      ],
+      [
+        "SGD",
+        "EUR"
+      ],
+      [
+        "SGD",
+        "GBP"
+      ],
+      [
+        "SGD",
+        "JPY"
+      ],
+      [
+        "SGD",
+        "MYR"
+      ],
+      [
+        "SGD",
+        "AUD"
+      ],
+      [
+        "SGD",
+        "CNY"
+      ],
+      [
+        "SGD",
+        "HKD"
+      ],
+      [
+        "SGD",
+        "IDR"
+      ],
+      [
+        "SGD",
+        "INR"
+      ],
+      [
+        "SGD",
+        "KRW"
+      ],
+      [
+        "SGD",
+        "NZD"
+      ],
+      [
+        "SGD",
+        "CAD"
+      ],
+      [
+        "SGD",
+        "CHF"
+      ],
+      [
+        "SGD",
+        "AED"
+      ],
+      [
+        "SGD",
+        "BRL"
+      ],
+      [
+        "SGD",
+        "ZAR"
+      ],
+      [
+        "SGD",
+        "VND"
+      ],
+      [
+        "SGD",
+        "PHP"
+      ]
+    ],
+    "query_cap": "dashboard reads at most the latest 10000 selected-pair observations",
+    "insertion_order": "pair-major in PAIRS order; oldest-to-newest within each pair"
+  },
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "sqlite": "3.53.1",
+    "os": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "machine": "AMD64",
+    "logical_cpu_count": 16,
+    "gc_policy": "enabled; default thresholds; no explicit collections during worker",
+    "gc_thresholds": [
+      700,
+      10,
+      10
+    ],
+    "perf_counter": {
+      "implementation": "QueryPerformanceCounter()",
+      "monotonic": true,
+      "adjustable": false,
+      "resolution": 1e-07
+    }
+  },
+  "user_reported_conditions": {
+    "power_mode": "performance",
+    "power_connection": "plugged in",
+    "background_activity": "no substantial background activity",
+    "attribution": "user reported after the completed run; not independently observed"
+  },
+  "source_sha256": {
+    "__init__.py": "80a4371295c0c35e3ef8a31380dfd5a3d5b40463ea637c6df69313338cca26db",
+    "__main__.py": "482b8693e2fe6dbd732e3d7961e03827d3efa187bad11d29da188be580ebbeea",
+    "app_service.py": "be24b1e89cb983a338d3072e82af42f1e757baf085b8ec7011b5a4dee526620c",
+    "cli.py": "87e98b0e93c360bef5e1b5ddc3642bc631038375ea64eca5fcc5878755f183e8",
+    "currency_catalogue.py": "1e91a6e087885cbe11794762247dc9f7300f9a6524fcb861f284ce91c1175053",
+    "data/currencies.json": "2532225513a96af7c29b54cd2d4f1429800d6bb4824cb335a87aca8504ae3c12",
+    "data/demo-quotes.json": "42f5b161b5be13489284f9c9b9fccfe583e2bb5e8d0efd11b1fffa11f3b3a1e0",
+    "data/demo-rules.json": "31492da34016c67e9590685eeeb986767c1a9fe1c18f37b53661d24eb67a8f8c",
+    "domain.py": "b3ac3fc57e7dae8ec1dd6afdb7171d3e4be4f2bf55354b618655e2b94cd2cef3",
+    "history_provider.py": "672cba6c285b117b3fb5207e5d365fe8ab35890ff05799d004d2665ab29d6313",
+    "monitor.py": "b0db32208f265942ed0f1acd77b17727b61db16c1a4dab12f36590c08661c1ab",
+    "provider.py": "f48a48a5c7990a67c6da81024505316f74b1aff6973ec1179f08893dfe1ab147",
+    "report.py": "2d329809a99a0dc7b37b86b5e9341edd7ff1355f52efac8084580e801834c0ca",
+    "server.py": "3ba76c363fe15e31012e23b049889e419b91adde082f4a0f2296336ebcdfe05e",
+    "static/app.css": "ec6f05ddbd554d16e51127bac91f1413b0297ee2fda630206f3c5c70394af908",
+    "static/app.js": "1e199377a220f5003ccfbcf95e20cb0a31c67926c23b6b0e7991f9f69a8c71e8",
+    "static/index.html": "0eca5c556f9ccccb50d845a3fa5988af571ff3a6cbb1505033d86e581144c904",
+    "storage.py": "0a653eec0ef04b515f09764172bc12593b86f40f6d0c4179c794cad793a14ab2",
+    "webapp.py": "d85786fc32e7e971933ee7b31cddc857a4bf0709b8927813c07af66a60fc06ad"
+  },
+  "benchmark_script_sha256": "c2ac21039b6e2c71fface4b9ab26e18299326775b6a3cb009d4751056a540ce7",
+  "original_summary_sha256": "62066863a7c512a9dc7d72e907eea4453923d6b18624932465e486407c089b0d",
+  "verification": {
+    "workers_verified": 15,
+    "timed_batches_verified": 150,
+    "dashboard_calls_in_timed_batches": 1500,
+    "fixture_hashes_match": true,
+    "newest90_identical": true,
+    "all_raw_evidence_unchanged_by_review": true,
+    "reported_summaries_recomputed_exactly": true
+  },
+  "case_statistics_ms": {
+    "rows-100": {
+      "count": 5,
+      "mean_ms": 36.9315446,
+      "median_ms": 38.291077,
+      "sample_sd_ms": 4.263686011067337,
+      "sample_variance_ms2": 18.1790184009713,
+      "min_ms": 31.458834,
+      "max_ms": 42.181597
+    },
+    "rows-1000": {
+      "count": 5,
+      "mean_ms": 46.829775399999995,
+      "median_ms": 41.550152,
+      "sample_sd_ms": 10.333062267601255,
+      "sample_variance_ms2": 106.7721758261248,
+      "min_ms": 40.558174,
+      "max_ms": 64.94072
+    },
+    "rows-10000": {
+      "count": 5,
+      "mean_ms": 175.02445640000002,
+      "median_ms": 176.970344,
+      "sample_sd_ms": 12.743671876746937,
+      "sample_variance_ms2": 162.4011729021908,
+      "min_ms": 154.551165,
+      "max_ms": 189.476363
+    }
+  },
+  "worker_results": [
+    {
+      "status": "complete",
+      "worker_id": "rows-1000-process-01",
+      "case_id": "rows-1000",
+      "measure": true,
+      "pid": 479024,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        392098800,
+        446811700,
+        398191800,
+        400438700,
+        419402900,
+        406921300,
+        392183800,
+        417618600,
+        397164900,
+        384984900
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "d65430473f0c6f4a8bb2bd459c31330677129cc9fc58ab2b7089c8a974059ad6",
+        "counts": {
+          "quotes": 20000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 40558174.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-100-process-01",
+      "case_id": "rows-100",
+      "measure": true,
+      "pid": 476728,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        414183400,
+        332455600,
+        364069900,
+        302070500,
+        293449700,
+        312554800,
+        330351100,
+        319949300,
+        343861000,
+        371295100
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "ab3eb19f04849786c814dadf89de6c8d3d0f3ff1f9cd8001c80d32a3b2ad0316",
+        "counts": {
+          "quotes": 2000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 33842404.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-10000-process-01",
+      "case_id": "rows-10000",
+      "measure": true,
+      "pid": 436712,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        1489997100,
+        1364867500,
+        1393669100,
+        1607940500,
+        1938575800,
+        1450933700,
+        1863259100,
+        1429325700,
+        1453205200,
+        1463342800
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "a0c18a22077255ad81a07058fdf1471b1fb2087f64a213ecca43145aab87ee4a",
+        "counts": {
+          "quotes": 200000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 154551165.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-100-process-02",
+      "case_id": "rows-100",
+      "measure": true,
+      "pid": 469168,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        370171100,
+        358741500,
+        342935200,
+        351410000,
+        345491800,
+        463077000,
+        463465600,
+        415813200,
+        390159800,
+        387115900
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "ab3eb19f04849786c814dadf89de6c8d3d0f3ff1f9cd8001c80d32a3b2ad0316",
+        "counts": {
+          "quotes": 2000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 38883811.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-10000-process-02",
+      "case_id": "rows-10000",
+      "measure": true,
+      "pid": 470344,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        1557575000,
+        1707347600,
+        2067404900,
+        1850356000,
+        2333630700,
+        1767726500,
+        1496919100,
+        1752919000,
+        1629737000,
+        1533418600
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "a0c18a22077255ad81a07058fdf1471b1fb2087f64a213ecca43145aab87ee4a",
+        "counts": {
+          "quotes": 200000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 176970344.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-1000-process-02",
+      "case_id": "rows-1000",
+      "measure": true,
+      "pid": 478580,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        456095400,
+        385792500,
+        411115600,
+        384437000,
+        387222300,
+        443310500,
+        391302300,
+        441434900,
+        396926300,
+        457378400
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "d65430473f0c6f4a8bb2bd459c31330677129cc9fc58ab2b7089c8a974059ad6",
+        "counts": {
+          "quotes": 20000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 41550152.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-1000-process-03",
+      "case_id": "rows-1000",
+      "measure": true,
+      "pid": 476208,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        421477400,
+        377195000,
+        413956100,
+        419989300,
+        432507500,
+        396608400,
+        405671900,
+        437402000,
+        402927800,
+        419659800
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "d65430473f0c6f4a8bb2bd459c31330677129cc9fc58ab2b7089c8a974059ad6",
+        "counts": {
+          "quotes": 20000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 41273952.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-10000-process-03",
+      "case_id": "rows-10000",
+      "measure": true,
+      "pid": 476044,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        1444322600,
+        1477372200,
+        1661541100,
+        1729316900,
+        1943280800,
+        2633055500,
+        1870643600,
+        1921604100,
+        2122965000,
+        2143534500
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "a0c18a22077255ad81a07058fdf1471b1fb2087f64a213ecca43145aab87ee4a",
+        "counts": {
+          "quotes": 200000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 189476363.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-100-process-03",
+      "case_id": "rows-100",
+      "measure": true,
+      "pid": 461284,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        716516700,
+        453573100,
+        316241000,
+        413695400,
+        498234700,
+        383739200,
+        377758600,
+        384900300,
+        345751500,
+        327749200
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "ab3eb19f04849786c814dadf89de6c8d3d0f3ff1f9cd8001c80d32a3b2ad0316",
+        "counts": {
+          "quotes": 2000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 42181597.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-10000-process-04",
+      "case_id": "rows-10000",
+      "measure": true,
+      "pid": 477444,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        1466869000,
+        1724354600,
+        1912426000,
+        1811267500,
+        2163832100,
+        1782552600,
+        1717868500,
+        1745437300,
+        1520917900,
+        1642748800
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "a0c18a22077255ad81a07058fdf1471b1fb2087f64a213ecca43145aab87ee4a",
+        "counts": {
+          "quotes": 200000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 174882743.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-1000-process-04",
+      "case_id": "rows-1000",
+      "measure": true,
+      "pid": 402204,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        424803400,
+        433469100,
+        448826700,
+        446089900,
+        648263600,
+        456691100,
+        1189584900,
+        931404400,
+        588470100,
+        926468800
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "d65430473f0c6f4a8bb2bd459c31330677129cc9fc58ab2b7089c8a974059ad6",
+        "counts": {
+          "quotes": 20000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 64940720.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-100-process-04",
+      "case_id": "rows-100",
+      "measure": true,
+      "pid": 478984,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        350387800,
+        350870200,
+        313702000,
+        348151600,
+        306982800,
+        278485800,
+        287751300,
+        312426800,
+        308528200,
+        288596900
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "ab3eb19f04849786c814dadf89de6c8d3d0f3ff1f9cd8001c80d32a3b2ad0316",
+        "counts": {
+          "quotes": 2000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 31458834.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-100-process-05",
+      "case_id": "rows-100",
+      "measure": true,
+      "pid": 460976,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        480686900,
+        506626200,
+        388559100,
+        346859800,
+        421223700,
+        353674500,
+        387838500,
+        329140400,
+        295128600,
+        319370000
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "ab3eb19f04849786c814dadf89de6c8d3d0f3ff1f9cd8001c80d32a3b2ad0316",
+        "counts": {
+          "quotes": 2000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 38291077.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-1000-process-05",
+      "case_id": "rows-1000",
+      "measure": true,
+      "pid": 475948,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        360632800,
+        354799300,
+        437697700,
+        403820400,
+        552483400,
+        503430200,
+        502954800,
+        434427700,
+        505075400,
+        527266200
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "d65430473f0c6f4a8bb2bd459c31330677129cc9fc58ab2b7089c8a974059ad6",
+        "counts": {
+          "quotes": 20000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 45825879.0
+    },
+    {
+      "status": "complete",
+      "worker_id": "rows-10000-process-05",
+      "case_id": "rows-10000",
+      "measure": true,
+      "pid": 477852,
+      "gc_enabled": true,
+      "raw_batches_ns": [
+        1594786100,
+        1398490900,
+        1349759900,
+        1538794400,
+        2063214700,
+        1731547300,
+        1848898800,
+        2352080700,
+        2742651900,
+        1303942000
+      ],
+      "verification": {
+        "oracle": "passed",
+        "fixture_sha256": "a0c18a22077255ad81a07058fdf1471b1fb2087f64a213ecca43145aab87ee4a",
+        "counts": {
+          "quotes": 200000,
+          "rules": 0,
+          "decisions": 0,
+          "rule_state": 0,
+          "rule_processing": 0,
+          "outbox": 0,
+          "notifications": 0,
+          "app_rules": 0,
+          "app_watchlist": 20,
+          "app_refreshes": 0
+        },
+        "application_and_script_unchanged": true,
+        "database_unchanged": true
+      },
+      "process_mean_ns": 179241667.0
+    }
+  ],
+  "interpretation_limits": [
+    "One machine and one deterministic synthetic distribution.",
+    "Variation is across five process means per case, not individual-request tail latency.",
+    "History growth varies while the visible90-point window stays constant.",
+    "Rules, outbox and notifications are empty.",
+    "HTTP, provider networking, all-watchlist cards and browser rendering are excluded.",
+    "Baseline only; no before/after speedup or asymptotic-complexity claim."
+  ]
+}

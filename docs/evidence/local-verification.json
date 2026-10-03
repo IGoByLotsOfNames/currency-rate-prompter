@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "kind": "recorded_local_verification_receipt",
+  "verification_run_id": "phase6/verification-20261003T090513Z",
+  "recorded_on": "2026-10-03",
+  "runtime": {
+    "os": "Windows",
+    "python": "3.12.14"
+  },
+  "suites": {
+    "python-suite.log": {
+      "sha256": "b435108081aac14500f25fbe27a1ee6296bbcdebcf0e35317a349293e52f6ba4",
+      "collected": 142,
+      "passed": 141,
+      "skipped": 1,
+      "summary_excerpt": "----------------------------------------------------------------------\nRan 142 tests in 77.019s\n\nOK (skipped=1)"
+    },
+    "extracted-source-bundle-tests.log": {
+      "sha256": "5e36739a57bdd4281cb22028e6b00ceeebca4b9b979e72516684f1484dd8b425",
+      "collected": 9,
+      "passed": 9,
+      "skipped": 0,
+      "summary_excerpt": "----------------------------------------------------------------------\nRan 9 tests in 17.118s\n\nOK"
+    }
+  },
+  "quality": {
+    "lint": {
+      "exit_code": 0,
+      "command": [
+        "python",
+        "-B",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ]
+    },
+    "format-check": {
+      "exit_code": 0,
+      "command": [
+        "python",
+        "-B",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ]
+    }
+  },
+  "skipped_test": {
+    "name": "test_report_rejects_symlink_alias",
+    "reason": "OS cannot create symlink: OSError"
+  },
+  "source_sha256": {
+    "__init__.py": "80a4371295c0c35e3ef8a31380dfd5a3d5b40463ea637c6df69313338cca26db",
+    "__main__.py": "482b8693e2fe6dbd732e3d7961e03827d3efa187bad11d29da188be580ebbeea",
+    "app_service.py": "be24b1e89cb983a338d3072e82af42f1e757baf085b8ec7011b5a4dee526620c",
+    "cli.py": "87e98b0e93c360bef5e1b5ddc3642bc631038375ea64eca5fcc5878755f183e8",
+    "currency_catalogue.py": "1e91a6e087885cbe11794762247dc9f7300f9a6524fcb861f284ce91c1175053",
+    "data/currencies.json": "2532225513a96af7c29b54cd2d4f1429800d6bb4824cb335a87aca8504ae3c12",
+    "data/demo-quotes.json": "42f5b161b5be13489284f9c9b9fccfe583e2bb5e8d0efd11b1fffa11f3b3a1e0",
+    "data/demo-rules.json": "31492da34016c67e9590685eeeb986767c1a9fe1c18f37b53661d24eb67a8f8c",
+    "domain.py": "b3ac3fc57e7dae8ec1dd6afdb7171d3e4be4f2bf55354b618655e2b94cd2cef3",
+    "history_provider.py": "672cba6c285b117b3fb5207e5d365fe8ab35890ff05799d004d2665ab29d6313",
+    "monitor.py": "b0db32208f265942ed0f1acd77b17727b61db16c1a4dab12f36590c08661c1ab",
+    "provider.py": "f48a48a5c7990a67c6da81024505316f74b1aff6973ec1179f08893dfe1ab147",
+    "report.py": "2d329809a99a0dc7b37b86b5e9341edd7ff1355f52efac8084580e801834c0ca",
+    "server.py": "3ba76c363fe15e31012e23b049889e419b91adde082f4a0f2296336ebcdfe05e",
+    "static/app.css": "ec6f05ddbd554d16e51127bac91f1413b0297ee2fda630206f3c5c70394af908",
+    "static/app.js": "1e199377a220f5003ccfbcf95e20cb0a31c67926c23b6b0e7991f9f69a8c71e8",
+    "static/index.html": "0eca5c556f9ccccb50d845a3fa5988af571ff3a6cbb1505033d86e581144c904",
+    "storage.py": "0a653eec0ef04b515f09764172bc12593b86f40f6d0c4179c794cad793a14ab2",
+    "webapp.py": "d85786fc32e7e971933ee7b31cddc857a4bf0709b8927813c07af66a60fc06ad"
+  },
+  "demo_launcher_sha256": "9a7ac442bbdcdfb7d089d09eda95a5da24f8b386a57c833ddff8e498aa4e4605",
+  "demo_tests_sha256": "bf59f2142d9a3f3e03c00ff43ec224591a679472c06319fecff95aba9a5e4434",
+  "tested_source_bundle": {
+    "archive": "Currency_Rate_Prompter_Offline_Demo_Source.zip",
+    "archive_sha256": "7e71556a1d8a15ad6456863e6c16f56e075bc1dbefceb98c2a28bbf1e58585f3",
+    "file_count": 66,
+    "extracted_demo_tests_exit_code": 0,
+    "extracted_demo_uses_site_packages": false
+  },
+  "coverage_provenance": {
+    "earlier_collection": "phase4/verification-20261003T070359Z",
+    "python_combined_percent_rounded": 92.51,
+    "frontend_tests_passed": 19,
+    "javascript_line_percent": 96.32,
+    "javascript_branch_percent": 82.84,
+    "new_phase6_coverage_collection": false
+  },
+  "limits": [
+    "Raw logs are retained in the local audit folder; this portable receipt contains summaries and hashes.",
+    "No new tests or performance benchmark were run during Phase 7 documentation work.",
+    "Remote GitHub Actions, browser rendering and POSIX demo lifecycle are not verified by these results."
+  ]
+}
