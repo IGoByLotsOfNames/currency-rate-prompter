@@ -1,10 +1,10 @@
-from datetime import timedelta
-from decimal import Decimal
 import json
 import sqlite3
-from pathlib import Path
 import tempfile
 import unittest
+from datetime import timedelta
+from decimal import Decimal
+from pathlib import Path
 
 from currency_prompter.domain import FakeClock, Quote, Rule, utc
 from currency_prompter.monitor import JournalNotifier, dispatch, load_quotes, load_rules, replay
@@ -19,8 +19,16 @@ def quote(hours=0, value="25", source="demo"):
 
 
 def rule(**kwargs):
-    config = dict(name="test", base="SGD", counter="THB", source="demo", direction="at_or_above",
-                  threshold="25", cooldown_seconds=3600, max_age_seconds=86400)
+    config = dict(
+        name="test",
+        base="SGD",
+        counter="THB",
+        source="demo",
+        direction="at_or_above",
+        threshold="25",
+        cooldown_seconds=3600,
+        max_age_seconds=86400,
+    )
     config.update(kwargs)
     return Rule(**config)
 
@@ -43,10 +51,14 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(self.store.counts()["outbox"], 1)
 
     def test_below_threshold(self):
-        self.assertEqual(self.process(quote(value="24.999999999999999999"))["outcomes"], ["below_condition"])
+        self.assertEqual(
+            self.process(quote(value="24.999999999999999999"))["outcomes"], ["below_condition"]
+        )
 
     def test_below_direction(self):
-        self.assertEqual(self.process(quote(), [rule(direction="at_or_below")])["outcomes"], ["queued"])
+        self.assertEqual(
+            self.process(quote(), [rule(direction="at_or_below")])["outcomes"], ["queued"]
+        )
 
     def test_duplicate_quote(self):
         self.process(quote())
@@ -66,24 +78,28 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(before, self.store.counts())
 
     def test_failure_after_outbox_insert_rolls_back_whole_transaction(self):
-        self.store.connection.execute("CREATE TRIGGER forced_failure BEFORE INSERT ON decisions BEGIN SELECT RAISE(ABORT,'injected failure'); END")
+        self.store.connection.execute(
+            "CREATE TRIGGER forced_failure BEFORE INSERT ON decisions BEGIN SELECT RAISE(ABORT,'injected failure'); END"
+        )
         with self.assertRaises(sqlite3.IntegrityError):
             self.process(quote())
         for table in ("quotes", "rules", "rule_state", "outbox", "decisions"):
-            self.assertEqual(self.store.connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0], 0)
+            self.assertEqual(
+                self.store.connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0], 0
+            )
         self.store.connection.execute("DROP TRIGGER forced_failure")
         self.assertEqual(self.process(quote())["outcomes"], ["queued"])
 
     def test_cooldown_boundary(self):
         self.process(quote())
-        self.assertEqual(self.process(quote(hours=.999))["outcomes"], ["cooldown"])
+        self.assertEqual(self.process(quote(hours=0.999))["outcomes"], ["cooldown"])
         self.assertEqual(self.process(quote(hours=1))["outcomes"], ["queued"])
 
     def test_cooldown_persists_after_reopen(self):
         self.process(quote())
         self.store.close()
         self.store = Store(self.path)
-        self.assertEqual(self.process(quote(hours=.5))["outcomes"], ["cooldown"])
+        self.assertEqual(self.process(quote(hours=0.5))["outcomes"], ["cooldown"])
 
     def test_out_of_order_is_stored_without_alert(self):
         self.process(quote(hours=3))
@@ -91,11 +107,15 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(self.store.counts()["quotes"], 2)
 
     def test_stale_quote(self):
-        self.assertEqual(self.process(quote(), now=START + timedelta(days=2))["outcomes"], ["stale"])
+        self.assertEqual(
+            self.process(quote(), now=START + timedelta(days=2))["outcomes"], ["stale"]
+        )
         self.assertEqual(self.store.counts()["outbox"], 0)
 
     def test_stale_boundary_inclusive(self):
-        self.assertEqual(self.process(quote(), now=START + timedelta(days=1))["outcomes"], ["queued"])
+        self.assertEqual(
+            self.process(quote(), now=START + timedelta(days=1))["outcomes"], ["queued"]
+        )
 
     def test_future_receipt_rejected_before_write(self):
         with self.assertRaises(ValueError):
@@ -132,6 +152,7 @@ class MonitorTests(unittest.TestCase):
         class Broken:
             def send(self, event, now):
                 raise RuntimeError("private detail must not persist")
+
         self.process(quote())
         self.assertEqual(dispatch(self.store, Broken())["failed"], 1)
         self.assertEqual(len(self.store.pending()), 1)
@@ -150,9 +171,16 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(self.store.counts()["notifications"], 1)
 
     def test_month_year_and_timezone_boundaries(self):
-        q = Quote("SGD", "THB", Decimal(25), utc("2025-12-31T23:30Z"), utc("2026-01-01T07:30+08:00"), "demo")
+        q = Quote(
+            "SGD",
+            "THB",
+            Decimal(25),
+            utc("2025-12-31T23:30Z"),
+            utc("2026-01-01T07:30+08:00"),
+            "demo",
+        )
         self.assertEqual(self.process(q)["outcomes"], ["queued"])
-        self.assertEqual(self.process(quote(hours=.5))["outcomes"], ["queued"])
+        self.assertEqual(self.process(quote(hours=0.5))["outcomes"], ["queued"])
 
     def test_replay_twice(self):
         quotes = [quote(hours=i) for i in range(10)]

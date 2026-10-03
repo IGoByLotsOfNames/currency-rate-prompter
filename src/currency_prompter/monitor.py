@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from .domain import Quote, Rule, SystemClock
+from .domain import Quote, Rule, SystemClock, utc
 
 MAX_INPUT_BYTES = 5_000_000
 
@@ -39,6 +39,7 @@ def load_quotes(path):
 
 class JournalNotifier:
     """Durable local dry-run sink. Event IDs make retries idempotent."""
+
     def __init__(self, store):
         self.store = store
 
@@ -53,10 +54,16 @@ def dispatch(store, notifier=None, clock=None):
     for row in store.pending():
         event = json.loads(row["payload"])
         try:
-            is_new = notifier.send(event, clock.now())
-            store.acknowledge(row["id"], clock.now())
-            result["acknowledged"] += 1
+            sent_at = utc(clock.now())
+            if sent_at < utc(row["created_at"]):
+                raise ValueError("delivery time must not precede its queued event")
+            is_new = notifier.send(event, sent_at)
             result["new_notifications"] += int(bool(is_new))
+            acknowledged_at = utc(clock.now())
+            if acknowledged_at < sent_at:
+                raise ValueError("acknowledgment time must not precede this delivery attempt")
+            store.acknowledge(row["id"], acknowledged_at)
+            result["acknowledged"] += 1
         except Exception as exc:
             store.failed(row["id"], exc)
             result["failed"] += 1

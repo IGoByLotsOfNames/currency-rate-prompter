@@ -1,11 +1,11 @@
 """Pure validation and value objects. Rates never pass through binary floats."""
 
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal, InvalidOperation
 import hashlib
 import json
 import re
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation
 
 UTC = timezone.utc
 
@@ -37,8 +37,8 @@ def rate(value: str | Decimal) -> Decimal:
         number = Decimal(value)
     except InvalidOperation as exc:
         raise ValueError("invalid decimal rate") from exc
-    if not number.is_finite() or not Decimal("0.000000001") <= number <= Decimal("1000000000"):
-        raise ValueError("rate must be finite and between 0.000000001 and 1000000000")
+    if not number.is_finite() or not Decimal("1e-18") <= number <= Decimal("1e18"):
+        raise ValueError("rate must be finite and between 1e-18 and 1e18")
     if len(number.as_tuple().digits) > 28:
         raise ValueError("rate must have at most 28 significant digits")
     return number
@@ -58,12 +58,16 @@ def currency(value: str) -> str:
 
 def identifier(value: str) -> str:
     if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", value):
-        raise ValueError("identifier must contain 1-64 letters, numbers, dots, underscores or hyphens")
+        raise ValueError(
+            "identifier must contain 1-64 letters, numbers, dots, underscores or hyphens"
+        )
     return value
 
 
 def digest(value: dict) -> str:
-    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -92,16 +96,36 @@ class Quote:
         return digest({k: v for k, v in self.to_dict().items() if k not in ("rate", "received_at")})
 
     def to_dict(self) -> dict:
-        return {"base": self.base, "counter": self.counter, "rate": decimal_text(self.value),
-                "observed_at": timestamp(self.observed_at), "received_at": timestamp(self.received_at),
-                "source": self.source}
+        return {
+            "base": self.base,
+            "counter": self.counter,
+            "rate": decimal_text(self.value),
+            "observed_at": timestamp(self.observed_at),
+            "received_at": timestamp(self.received_at),
+            "source": self.source,
+        }
 
     @classmethod
     def from_dict(cls, value: dict):
-        if not isinstance(value, dict) or set(value) != {"base", "counter", "rate", "observed_at", "received_at", "source"}:
-            raise ValueError("quote requires exactly base, counter, rate, observed_at, received_at and source")
-        return cls(value["base"], value["counter"], rate(value["rate"]), utc(value["observed_at"]),
-                   utc(value["received_at"]), value["source"])
+        if not isinstance(value, dict) or set(value) != {
+            "base",
+            "counter",
+            "rate",
+            "observed_at",
+            "received_at",
+            "source",
+        }:
+            raise ValueError(
+                "quote requires exactly base, counter, rate, observed_at, received_at and source"
+            )
+        return cls(
+            value["base"],
+            value["counter"],
+            rate(value["rate"]),
+            utc(value["observed_at"]),
+            utc(value["received_at"]),
+            value["source"],
+        )
 
 
 @dataclass(frozen=True)
@@ -135,9 +159,16 @@ class Rule:
         return digest(self.to_dict())
 
     def to_dict(self):
-        return {"name": self.name, "base": self.base, "counter": self.counter, "source": self.source,
-                "direction": self.direction, "threshold": decimal_text(self.threshold),
-                "cooldown_seconds": self.cooldown_seconds, "max_age_seconds": self.max_age_seconds}
+        return {
+            "name": self.name,
+            "base": self.base,
+            "counter": self.counter,
+            "source": self.source,
+            "direction": self.direction,
+            "threshold": decimal_text(self.threshold),
+            "cooldown_seconds": self.cooldown_seconds,
+            "max_age_seconds": self.max_age_seconds,
+        }
 
     @classmethod
     def from_dict(cls, value):
@@ -152,7 +183,11 @@ class Rule:
         return (self.base, self.counter, self.source) == (quote.base, quote.counter, quote.source)
 
     def qualifies(self, quote):
-        return quote.value >= self.threshold if self.direction == "at_or_above" else quote.value <= self.threshold
+        return (
+            quote.value >= self.threshold
+            if self.direction == "at_or_above"
+            else quote.value <= self.threshold
+        )
 
 
 @dataclass

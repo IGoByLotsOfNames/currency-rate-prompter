@@ -43,9 +43,11 @@ The bundled notifier is a **local dry-run journal** with a unique event ID. If t
 
 The storage engine accepts an explicit `now`, and delivery accepts a clock object. Tests therefore cross cooldown, midnight, month and year boundaries without sleeping. `poll` uses the real UTC clock and fetches once. Scheduling is left to the operating system; a daily provider does not need a tight polling loop.
 
-## Read-only inspection
+## Local HTTP interfaces
 
 `serve` binds to `127.0.0.1` only, enforces a local Host header, limits query fields/results, and opens SQLite read-only. Routes return the dashboard, counts, quotes and alert state. It has no mutation or notification endpoint. SQL values are parameterised. HTML text is escaped, and an explicit CSP disables scripts and framing. This small standard-library server is for local inspection, not a public deployment or an authentication solution.
+
+The interactive `app` command is a separate loopback interface. It adds watchlist, rule, history and refresh operations through bounded JSON requests, with Host and Origin validation and a per-server CSRF token for state changes. Browsing stored state makes no provider call; refresh and history actions explicitly request reference data. This interface is also for one local user and has no public-hosting authentication or account system. See the [app guide](local-app.md).
 
 Reports show at most the latest 1,000 observations, grouped by pair and source so incompatible rates are never joined. SVG coordinates use floats for drawing only; stored values and thresholds remain decimal strings. Reports plot observations, not interpolation-based forecasts.
 

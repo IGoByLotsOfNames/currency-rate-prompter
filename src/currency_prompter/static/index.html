@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Currency Rate Prompter</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to your dashboard</a>
+  <aside class="sidebar" aria-label="Workspace navigation">
+    <a class="brand" href="#overview" aria-label="Currency Rate Prompter overview"><span class="brand-mark">CRP</span><span>Currency Rate<span class="brand-sub">Prompter</span></span></a>
+    <span class="nav-caption">YOUR WORKSPACE</span>
+    <nav class="nav-links">
+      <a class="nav-item active" href="#overview" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>Overview</a>
+      <a class="nav-item" href="#watchlist"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg>Watchlist</a>
+      <a class="nav-item" href="#alerts"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>Alerts</a>
+    </nav>
+    <div class="sidebar-bottom"><span class="workspace-label"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Local workspace</span><p>Built around a real<br><strong>THB → SGD need.</strong></p><span class="sidebar-footnote">A little more context.<br>A little less checking.</span></div>
+  </aside>
+
+  <main id="main" class="main">
+    <header class="page-header">
+      <div><p class="eyebrow">CURRENCY RATE PROMPTER</p><h1>Keep an eye on the exchange.</h1><p class="lead">Follow your pairs. Set a target. Know what changed.</p></div>
+      <div class="header-actions"><button id="export-button" class="button secondary" type="button" disabled><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Export CSV</button><button id="refresh-button" class="button primary" type="button" disabled><svg class="icon refresh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.5 7a8 8 0 0 1 13-2L20 7M4 17l1.5 2a8 8 0 0 0 13-2"/></svg><span>Refresh rates</span></button></div>
+    </header>
+
+    <div id="app-error" class="error-banner" role="alert" hidden><span id="app-error-text"></span><button id="retry-button" class="text-button" type="button">Try again</button></div>
+
+    <div class="workspace-toolbar">
+      <div class="mode-control"><span class="toolbar-label">Data source</span><div class="segmented" role="group" aria-label="Data source"><button id="mode-demo" type="button" aria-pressed="true">Demo</button><button id="mode-reference" type="button" aria-pressed="false">Reference</button></div><span id="mode-badge" class="badge synthetic">Synthetic data</span></div>
+      <div class="auto-control"><label class="toolbar-label" for="auto-refresh">Auto-refresh</label><select id="auto-refresh"><option value="0">Off</option><option value="15">Every 15 minutes</option><option value="60">Every hour</option></select></div>
+    </div>
+    <div class="workspace-notes"><p id="mode-note">Demo data is synthetic. No provider is contacted.</p><p id="schedule-note">Automatic refresh is off.</p></div>
+
+    <section id="overview" class="section">
+      <div class="section-heading"><h2>Overview</h2><div class="pair-control"><label for="pair-select">Selected pair</label><select id="pair-select" disabled><option>Loading pairs…</option></select></div></div>
+      <div class="overview-grid">
+        <article class="panel rate-panel" aria-labelledby="rate-heading">
+          <div class="rate-top"><div><p id="pair-name" class="eyebrow">YOUR SELECTED PAIR</p><h3 id="rate-heading" class="pair-title">Exchange rate</h3></div><span id="freshness-badge" class="badge neutral">Loading</span></div>
+          <div class="quote-row"><div><p id="quote-value" class="quote-value">—</p><p id="quote-unit" class="quote-unit">Rate per 1 base currency</p></div><div class="change-block"><span id="quote-change" class="change-value">—</span><span>vs. prior observation</span></div></div>
+          <p id="buying-note" class="buying-note">Choose a pair to see its quote direction.</p>
+          <div class="quote-meta"><span><span class="meta-label">Observed</span><strong id="observed-date">—</strong></span><span><span class="meta-label">Source</span><strong id="quote-source">—</strong></span></div>
+
+          <div class="chart-heading"><h4>Rate history</h4><button id="history-button" class="text-button history-button" type="button" hidden>Load 90-day history</button><div id="range-control" class="segmented compact" role="group" aria-label="History period"><button type="button" data-days="7" aria-pressed="false">7D</button><button type="button" data-days="30" aria-pressed="true">30D</button><button type="button" data-days="90" aria-pressed="false">90D</button></div></div>
+          <div class="chart-wrap"><svg id="history-chart" class="history-chart" viewBox="0 0 720 236" role="img" tabindex="0" aria-label="Rate history, loading" aria-describedby="chart-help"></svg><div id="chart-empty" class="chart-empty"><span class="empty-symbol">↗</span><strong>Loading your history</strong><p>Please wait a moment.</p></div></div>
+          <div class="chart-footer"><p id="chart-readout" aria-live="polite">No observation selected.</p><p id="chart-help">Point at the chart or use ← → when focused.</p></div>
+          <div class="range-stats"><div><span>Period low</span><strong id="range-low">—</strong></div><div><span>Period high</span><strong id="range-high">—</strong></div><div><span>Last refreshed</span><strong id="last-refresh">—</strong></div></div>
+          <p id="dashboard-note" class="small-note"></p>
+          <details class="history-details"><summary>View history as a table <span id="history-count"></span></summary><div class="table-scroll"><table><caption class="sr-only">Recorded observations for the selected pair and period</caption><thead><tr><th scope="col">Observed (UTC)</th><th scope="col">Rate</th></tr></thead><tbody id="history-rows"><tr><td colspan="2">No observations yet.</td></tr></tbody></table></div></details>
+        </article>
+
+        <aside class="panel converter-panel" aria-labelledby="converter-title">
+          <div class="card-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg></div>
+          <p class="eyebrow">PLAN A CONVERSION</p><h3 id="converter-title">What would I get?</h3><p class="card-description">An estimate using the selected quote.</p>
+          <form id="convert-form"><fieldset id="convert-fields" disabled>
+            <div id="conversion-direction" class="segmented direction-control" role="group" aria-label="Conversion direction"><button type="button" data-direction="counter_to_base" aria-pressed="true">Counter → base</button><button type="button" data-direction="base_to_counter" aria-pressed="false">Base → counter</button></div>
+            <label for="convert-amount">You have <span id="input-currency" class="inline-currency">—</span></label><div class="amount-input"><input id="convert-amount" name="amount" type="text" inputmode="decimal" placeholder="Enter amount" autocomplete="off" required maxlength="40"><span id="amount-unit">—</span></div>
+            <label for="convert-fee" class="fee-label">Optional fee estimate <span>%</span></label><input id="convert-fee" name="fee" type="number" min="0" max="100" step="0.01" value="0" inputmode="decimal">
+            <button id="convert-button" class="button primary full-width" type="submit">Calculate conversion <span aria-hidden="true">→</span></button>
+          </fieldset></form>
+          <div class="conversion-result" aria-live="polite"><span>You could receive <strong id="output-currency">—</strong></span><p id="conversion-value">—</p><p id="conversion-detail">Select a quote, then enter an amount.</p></div>
+          <p class="small-note">An estimate, not a bank quote. Your provider’s rate and fees may differ.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="watchlist" class="section">
+      <div class="section-heading"><div><p class="eyebrow">YOUR SHORTLIST</p><h2>Pairs worth watching</h2></div><button id="add-pair-toggle" class="button secondary" type="button" aria-expanded="false" aria-controls="add-pair-form" disabled><span aria-hidden="true">＋</span>Add a pair</button></div>
+      <div class="catalogue-bar"><div><p id="catalogue-status" class="catalogue-status">Loading available currencies…</p><p id="catalogue-note" class="catalogue-note">Available currencies depend on the reference provider.</p></div><button id="catalogue-refresh" class="button quiet" type="button" disabled>Refresh currency list</button></div>
+      <form id="add-pair-form" class="panel inline-form" hidden><fieldset id="watchlist-fields">
+        <div class="field currency-picker"><label for="add-base-search">Find a base currency</label><input id="add-base-search" type="search" placeholder="Code or currency name" autocomplete="off" aria-controls="add-base" aria-describedby="add-base-count"><label class="sr-only" for="add-base">Base currency</label><select id="add-base" required aria-describedby="add-base-count"></select><span id="add-base-count" class="search-count" role="status" aria-live="polite"></span></div>
+        <span class="form-arrow" aria-hidden="true">→</span>
+        <div class="field currency-picker"><label for="add-counter-search">Find a counter currency</label><input id="add-counter-search" type="search" placeholder="Code or currency name" autocomplete="off" aria-controls="add-counter" aria-describedby="add-counter-count"><label class="sr-only" for="add-counter">Counter currency</label><select id="add-counter" required aria-describedby="add-counter-count"></select><span id="add-counter-count" class="search-count" role="status" aria-live="polite"></span></div>
+        <button class="button primary" type="submit">Add to watchlist</button><button id="cancel-pair" class="button quiet" type="button">Cancel</button>
+      </fieldset></form>
+      <div id="watchlist-cards" class="watchlist-grid" aria-live="polite"><div class="panel empty-card">Loading your watchlist…</div></div>
+    </section>
+
+    <section id="alerts" class="section">
+      <div class="section-heading"><div><p class="eyebrow">LESS CHECKING, MORE CONTEXT</p><h2>Let your targets do the watching</h2></div><span class="badge neutral">Local alerts only</span></div>
+      <div class="alerts-grid">
+        <article class="panel rule-form-panel"><h3>Create a target</h3><p id="rule-pair" class="card-description">For your selected pair.</p><form id="rule-form"><fieldset id="rule-fields" disabled>
+          <label for="rule-name">Target name</label><input id="rule-name" name="name" type="text" placeholder="e.g. SGD buy target" required maxlength="64" autocomplete="off">
+          <div class="field-row"><div class="field"><label for="rule-direction">Notify when</label><select id="rule-direction"><option value="at_or_below">At or below</option><option value="at_or_above">At or above</option></select></div><div class="field"><label for="rule-threshold">Rate <span id="threshold-unit"></span></label><input id="rule-threshold" type="text" inputmode="decimal" placeholder="Target rate" required maxlength="40" autocomplete="off"></div></div>
+          <label for="rule-cooldown">Wait between alerts <span class="label-hint">hours</span></label><input id="rule-cooldown" type="number" value="24" min="0" max="8760" step="0.25" required>
+          <button class="button primary full-width" type="submit">Create target <span aria-hidden="true">＋</span></button>
+        </fieldset></form><p class="small-note">Alerts are recorded in this workspace. No email, desktop message or trade is sent.</p></article>
+        <article class="panel targets-panel"><div class="card-heading"><h3>Your targets</h3><span id="rule-count" class="count-label">0 targets</span></div><p class="card-description">Conditions for the selected pair and data source.</p><div id="rules-list"><div class="empty-state"><span class="empty-symbol">⌁</span><strong>No targets yet</strong><p>Create a target to start recording local alerts.</p></div></div></article>
+      </div>
+      <article class="panel journal-panel"><div class="card-heading"><div><h3>Local alert journal</h3><p class="card-description">A record of triggered targets for this pair. Earlier alerts remain after a target is disabled or removed.</p></div><span id="alert-count" class="count-label">0 alerts</span></div><div class="table-scroll"><table><caption class="sr-only">Local alert history for the selected pair and source</caption><thead><tr><th scope="col">Target</th><th scope="col">Triggered rate</th><th scope="col">Queued (UTC)</th><th scope="col">Local status</th></tr></thead><tbody id="alert-rows"><tr><td colspan="4" class="table-empty">No local alerts yet.</td></tr></tbody></table></div></article>
+    </section>
+    <footer class="page-footer"><span>Currency Rate Prompter</span><span>Local records. Explicit sources. No automatic trades.</span><a href="#overview">Back to overview ↑</a></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+</body>
+</html>
