@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "kind": "test_fixture_path_normalization",
+  "recorded_on": "2026-10-03",
+  "affected_file": "tests/test_demo_launcher.py",
+  "before_sha256": "bf59f2142d9a3f3e03c00ff43ec224591a679472c06319fecff95aba9a5e4434",
+  "after_sha256": "f0ca95e1cceaa58d84a6e6221cfaea26308b45c25fba9b86949d95aa5641967a",
+  "trigger": "Hosted Windows tests exposed a temporary-directory spelling mismatch in the interrupted-start regression test.",
+  "reproduction": {
+    "method": "Used Windows GetShortPathNameW to supply a genuine 8.3 temporary parent alias. The alias and long spelling resolved to the same directory.",
+    "before": "The direct internal SessionLock call raised the same folder-boundary ValueError.",
+    "after": "The same regression test passed with output.resolve() supplied to the direct helper call."
+  },
+  "change": "Resolve the test fixture path before directly reacquiring SessionLock, matching the production launcher, which already resolves session paths. The production entry point still receives the alias during reproduction.",
+  "unchanged": [
+    "All 19 application, static and data resources",
+    "Demo launcher and its folder-boundary check",
+    "Benchmark script, inputs and recorded results",
+    "Original dated local and integration verification receipts"
+  ],
+  "local_validation": {
+    "runtime": "Windows, Python 3.12.14",
+    "alias_reproduction_after_fix": {
+      "collected": 1,
+      "passed": 1
+    },
+    "demo_suite": {
+      "collected": 9,
+      "passed": 9
+    },
+    "full_python_suite": {
+      "collected": 142,
+      "passed": 141,
+      "skipped": 1,
+      "skip": "Windows symlink creation unavailable"
+    },
+    "ruff_lint": "passed",
+    "ruff_format": "39 files already formatted",
+    "diff_check": "passed"
+  },
+  "logs": {
+    "windows-alias-before.log": {
+      "sha256": "9bb180a3c2658aff6a71f2cc4c684113a08baac8f0d9275dca37034d8cd1dfcd"
+    },
+    "windows-alias-after.log": {
+      "sha256": "60740e6ec4d0c30a5f70dc56217e800d3d5177e120cee34e0c1c1b01b9b9c158"
+    },
+    "demo-tests-after-windows-fix.log": {
+      "sha256": "49cb2ae5c7d6532b1efdf155cb02c03b405affa909f1641fc2426503fa200c75"
+    },
+    "python-suite-after-windows-fix.log": {
+      "sha256": "373abf04fb8550f99544ef43879a2ee6d2f26e2a33ef1969efd36c104cc29fd2"
+    },
+    "lint-after-windows-fix.log": {
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "format-after-windows-fix.log": {
+      "sha256": "5b130a6ba932c4b468fdad9c13f2cad3d7624dd27d329a240f31b73f5a2205e3"
+    },
+    "diff-check-after-windows-fix.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "hosted_ci_success_claimed": false,
+  "limits": [
+    "Local reproduction and reruns do not establish a successful hosted CI run.",
+    "No new coverage collection or performance measurement was performed for this test-only correction."
+  ]
+}
