@@ -1,28 +1,30 @@
-from contextlib import redirect_stdout, redirect_stderr
-from decimal import Decimal
-from io import BytesIO, StringIO
-from http.client import HTTPConnection
 import json
-from pathlib import Path
 import tempfile
 import threading
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from decimal import Decimal
+from http.client import HTTPConnection
+from io import BytesIO, StringIO
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from test_monitor import START, quote, rule
+
 from currency_prompter.cli import main
-from currency_prompter.domain import utc
 from currency_prompter.monitor import load_json
-from currency_prompter.provider import Frankfurter, MAX_RESPONSE, parse_response
+from currency_prompter.provider import MAX_RESPONSE, Frankfurter, parse_response
 from currency_prompter.report import chart_svg, html_report
 from currency_prompter.server import make_server
 from currency_prompter.storage import Store
-from test_monitor import quote, rule, START
 
 
 class ProviderTests(unittest.TestCase):
     def body(self, **kwargs):
-        return dict(dict(base="SGD", quote="THB", rate=Decimal("25.1234"), date="2026-01-01"), **kwargs)
+        return dict(
+            dict(base="SGD", quote="THB", rate=Decimal("25.1234"), date="2026-01-01"), **kwargs
+        )
 
     def test_response_contract(self):
         q = parse_response(self.body(), "SGD", "THB", START)
@@ -30,8 +32,16 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(q.source, "frankfurter")
 
     def test_invalid_provider_shapes(self):
-        for body in ([], {}, self.body(base=None), self.body(quote=[]), self.body(base="USD"),
-                     self.body(rate="NaN"), self.body(date="2026-02-30"), self.body(date=42)):
+        for body in (
+            [],
+            {},
+            self.body(base=None),
+            self.body(quote=[]),
+            self.body(base="USD"),
+            self.body(rate="NaN"),
+            self.body(date="2026-02-30"),
+            self.body(date=42),
+        ):
             with self.subTest(body=body), self.assertRaises(ValueError):
                 parse_response(body, "SGD", "THB", START)
 
@@ -39,33 +49,45 @@ class ProviderTests(unittest.TestCase):
         def transport(request, timeout):
             self.assertEqual(timeout, 10)
             self.assertTrue(request.full_url.endswith("/sgd/thb"))
-            return BytesIO(b'{"base":"SGD","quote":"THB","rate":25.123456789123456789,"date":"2026-01-01"}')
-        self.assertEqual(Frankfurter(transport=transport).fetch("SGD", "THB", START).value, Decimal("25.123456789123456789"))
+            return BytesIO(
+                b'{"base":"SGD","quote":"THB","rate":25.123456789123456789,"date":"2026-01-01"}'
+            )
+
+        self.assertEqual(
+            Frankfurter(transport=transport).fetch("SGD", "THB", START).value,
+            Decimal("25.123456789123456789"),
+        )
 
     def test_oversized_response_not_retried(self):
         calls = []
+
         def transport(*a, **k):
             calls.append(1)
             return BytesIO(b"x" * (MAX_RESPONSE + 1))
+
         with self.assertRaises(ValueError):
             Frankfurter(transport=transport).fetch("SGD", "THB", START)
         self.assertEqual(len(calls), 1)
 
     def test_retry_bound(self):
         calls, sleeps = [], []
+
         def transport(*a, **k):
             calls.append(1)
             raise URLError("offline")
+
         with self.assertRaises(ValueError):
             Frankfurter(transport=transport, sleep=sleeps.append).fetch("SGD", "THB", START)
         self.assertEqual(len(calls), 3)
-        self.assertEqual(sleeps, [.25, .5])
+        self.assertEqual(sleeps, [0.25, 0.5])
 
     def test_http_404_not_retried(self):
         calls = []
+
         def transport(*a, **k):
             calls.append(1)
             raise HTTPError("url", 404, "missing", {}, None)
+
         with self.assertRaises(ValueError):
             Frankfurter(transport=transport).fetch("SGD", "THB", START)
         self.assertEqual(len(calls), 1)
@@ -117,9 +139,13 @@ class BoundaryTests(unittest.TestCase):
                 self.assertEqual(json.load(response)["mode"], "read-only")
             with urlopen(root + "/", timeout=3) as response:
                 self.assertIn(b"Currency Rate Prompter", response.read())
-            for path, status in (("/missing", 404), ("/api/quotes?limit=0", 400),
-                                 ("/api/quotes?base=SGD", 400), ("/api/quotes?limit=1&limit=2", 400),
-                                 ("/api/quotes?base=%27--&counter=THB", 400)):
+            for path, status in (
+                ("/missing", 404),
+                ("/api/quotes?limit=0", 400),
+                ("/api/quotes?base=SGD", 400),
+                ("/api/quotes?limit=1&limit=2", 400),
+                ("/api/quotes?base=%27--&counter=THB", 400),
+            ):
                 with self.subTest(path=path), self.assertRaises(HTTPError) as cm:
                     urlopen(root + path, timeout=3)
                 self.assertEqual(cm.exception.code, status)
@@ -130,7 +156,9 @@ class BoundaryTests(unittest.TestCase):
                 urlopen(Request(root + "/api/quotes", data=b"{}"), timeout=3)
             self.assertEqual(cm.exception.code, 501)
             connection = HTTPConnection("127.0.0.1", server.server_port, timeout=3)
-            connection.request("GET", "http://[", headers={"Host": f"127.0.0.1:{server.server_port}"})
+            connection.request(
+                "GET", "http://[", headers={"Host": f"127.0.0.1:{server.server_port}"}
+            )
             self.assertEqual(connection.getresponse().status, 400)
             connection.close()
         finally:
@@ -140,7 +168,9 @@ class BoundaryTests(unittest.TestCase):
 
     def test_cli_error_exit(self):
         with redirect_stderr(StringIO()) as output:
-            result = main(["replay", "--db", str(self.path), "--rules", "no-such-file", "--quotes", "missing"])
+            result = main(
+                ["replay", "--db", str(self.path), "--rules", "no-such-file", "--quotes", "missing"]
+            )
         self.assertEqual(result, 2)
         self.assertIn("error:", output.getvalue())
 
