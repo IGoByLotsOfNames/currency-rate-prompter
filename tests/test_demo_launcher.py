@@ -93,7 +93,8 @@ class OfflineServiceTests(unittest.TestCase):
             servers[0].server_close.assert_called_once()
             self.assertEqual(-1, servers[0].socket.fileno())
             self.assertEqual("failed", json.loads((output / "session.json").read_text())["status"])
-            acquired = launcher.SessionLock(output)
+            # Match prepare_session: Windows TEMP can use a short-path alias.
+            acquired = launcher.SessionLock(output.resolve())
             acquired.close()
 
 
