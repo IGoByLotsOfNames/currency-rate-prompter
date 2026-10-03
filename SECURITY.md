@@ -1,10 +1,10 @@
 # Security and data boundaries
 
-- Runtime has no third-party dependencies and no credential requirement. The live provider is opt-in; demo and tests are offline.
-- No original private logs, email recipients, credentials, pickles or binaries are included. JSON is schema-validated; pickle is never loaded.
-- The notifier records to a local SQLite journal. It does not send email or make purchases, conversions or trades.
-- State databases are local, unencrypted files. Keep them outside public repositories. The `.gitignore` excludes common state extensions and `.env` files.
-- The optional server binds to loopback, verifies its Host header and exposes only read-only routes. Do not reverse-proxy it to the internet; it has no authentication or production hardening.
-- Malformed inputs and external responses have size limits. Cooldowns and replay decisions are durable; failed provider requests do not silently generate quotes.
+- The application runtime uses the Python standard library and requires no credentials. Reference-provider access is explicit; the offline demo and automated tests use synthetic or injected data.
+- Original private logs, email recipients, credentials, pickles and binaries are not part of the published revision. JSON inputs are schema-validated; the maintained implementation does not load pickle files.
+- Alert delivery records to a local SQLite journal. It does not send email or make purchases, conversions or trades.
+- State databases are local, unencrypted files. Keep them outside public repositories. The `.gitignore` excludes common state extensions, generated sessions and `.env` files.
+- Both HTTP interfaces bind to loopback. The `serve` command provides read-only inspection. The interactive `app` command permits state-changing operations, protected by bounded JSON bodies, local Host/Origin checks and a per-server CSRF token. Neither is an authenticated public-hosting design; do not expose them through a public reverse proxy.
+- Malformed inputs and external responses have size limits. Cooldowns and replay decisions are durable; failed provider requests do not silently generate quotes or discard existing history.
 
 Please report a security issue through the repository's private vulnerability reporting feature if available. Otherwise use the author's linked contact route without posting secrets in a public issue.

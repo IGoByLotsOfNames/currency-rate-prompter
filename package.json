@@ -1,0 +1,16 @@
+{
+  "name": "currency-rate-prompter-ui-tests",
+  "private": true,
+  "description": "Offline DOM regression tests for the local currency tracker",
+  "engines": {
+    "node": ">=24.15.0 <25"
+  },
+  "scripts": {
+    "check": "node --check src/currency_prompter/static/app.js && node --check tests/frontend.test.cjs",
+    "test": "node --test tests/frontend.test.cjs",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/currency_prompter/static/app.js tests/frontend.test.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "30.1.1"
+  }
+}

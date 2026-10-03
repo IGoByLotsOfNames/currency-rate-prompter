@@ -1,0 +1,10 @@
+include README.md LICENSE SECURITY.md pyproject.toml
+include requirements-dev.txt requirements-visuals.txt
+include package.json package-lock.json
+include Run*.cmd
+recursive-include src *.py *.json *.html *.css *.js
+recursive-include scripts *.py
+recursive-include tests *.py *.cjs
+recursive-include examples *.json
+recursive-include docs *.md *.json *.html *.png *.jpg *.svg *.py
+recursive-exclude * __pycache__ *.py[cod]

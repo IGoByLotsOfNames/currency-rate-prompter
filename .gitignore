@@ -12,3 +12,17 @@ htmlcov/
 .env
 output/
 demo-output/
+
+# Development-only tooling and local reports
+node_modules/
+.ruff_cache/
+.coverage.*
+coverage.json
+coverage.xml
+
+# User-run benchmark fixtures and raw results
+benchmark-results/
+ci-benchmark-check/
+
+# Local, repeatable reviewer sessions
+demo-sessions/
