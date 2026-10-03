@@ -38,6 +38,12 @@ The source distribution now includes the demo launcher; [the distribution checke
 
 The [manual browser record](evidence/browser-verification.json) separately records a rendered desktop overview, THB-to-SGD calculation with an optional fee, repeated-refresh alert deduplication, CSV download initiation, catalogue search and a watchlist saved across page reload. It does not establish all responsive breakpoints, all keyboard/pointer interactions or cross-browser compatibility.
 
+## Windows fixture correction, 3 October 2026
+
+Hosted Windows tests exposed a temporary-directory alias mismatch in one regression test. The launcher already resolves its session directory; the test now does the same before directly reacquiring its internal lock. A genuine Windows 8.3 alias reproduced the original failure and passed after this fixture-only correction. The nine demo tests and full Python suite (141 passed, one symlink skip) passed locally again, as did lint and formatting.
+
+Application logic, folder-boundary checks and benchmark evidence are unchanged. The original dated receipts remain intact; [the repair record](evidence/ci-repair.json) identifies the exact old/new test hashes and rerun logs. Hosted results remain separate from these local checks.
+
 ## Supplied regression results, 3 October 2026
 
 The recorded complete Python suite collected **142 tests: 141 passed and one Windows symlink test was skipped**. The nine offline-demo tests, included in that suite, also passed separately from the extracted source bundle with site packages disabled. Ruff lint and formatting passed. The retained [portable verification receipt](evidence/local-verification.json) identifies the exact log summaries and source hashes.
